@@ -9,8 +9,11 @@
 export class AudioProcessor {
     decoder = null;
     audioBufferQueue = { bufferQueue: new Set(), nextBufferTime: 0 };
+    onloadedcallback = null;
+    loaded = false;    
 
-    constructor(audioContext) {
+    constructor(audioContext, onloadedcallback) {
+        this.onloadedcallback = onloadedcallback;
         this.audioContext = audioContext;
         this.gain = this.audioContext.createGain();
         this.gain.connect(this.audioContext.destination);
@@ -46,19 +49,41 @@ export class AudioProcessor {
             await this.decoder.decode(chunk);
             return Promise.resolve();
         } else {
+            this._changeState(false);
             return Promise.reject(`${metadata.codec} decoder not configured`);
         }
     }
 
     close() {
+        this._changeState(false);
         if (this.decoder && this.decoder.state !== "closed") {
             this.decoder.close();
         }
-        this.audioBufferQueue.bufferQueue.forEach(source => source.stop());
-        this.audioBufferQueue.bufferQueue.clear();
+        this._clearBufferQueue();
     }    
 
+    _clearBufferQueue() {
+        this.audioBufferQueue.bufferQueue.forEach(source => source.stop());
+        this.audioBufferQueue.bufferQueue.clear();
+        this.audioBufferQueue.nextBuffer = 0;
+    }
+
+    _changeState(state) {
+        if (this.loaded != state) {
+            this?.onloadedcallback(state);
+            this.loaded = state;
+        }  
+    }
+        
     async _processAudioFrame(frame) {
+
+        this._changeState(true);
+
+        if (this.audioBufferQueue.bufferQueue.size > 100) {
+            console.log('audio buffer queue is full, clearing');
+            this._clearBufferQueue();
+        }
+
         const { numberOfChannels, numberOfFrames, sampleRate, format } = frame;
 
         const audioBuffer = this.audioContext.createBuffer(numberOfChannels, numberOfFrames, sampleRate);

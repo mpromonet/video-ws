@@ -25,16 +25,22 @@ class VideoWsElement extends HTMLElement {
 
         this.audioContext = new AudioContext();
         const canvas = document.createElement("canvas");
-        this.mediaStream = new MediaStream(canvas, this.audioContext, (loaded) => {
-            if (loaded) {
-                this.shadowDOM.getElementById("spinner").classList.remove("loading");
-            } else {
-                this.shadowDOM.getElementById("spinner").classList.add("loading");
-            }
-        });
-
         this.stream = canvas.captureStream();
-        this.stream.addTrack(this.audioContext.createMediaStreamDestination().stream.getAudioTracks()[0]);          
+        const audioTrack = this.audioContext.createMediaStreamDestination().stream.getAudioTracks()[0];
+        this.mediaStream = new MediaStream(canvas, this.audioContext, (loaded) => {
+                if (loaded) {
+                    this.shadowDOM.getElementById("spinner").classList.remove("loading");
+                } else {
+                    this.shadowDOM.getElementById("spinner").classList.add("loading");
+                }            
+            }, (loaded) => {
+                if (loaded) {
+                    this.stream.addTrack(audioTrack);          
+                } else {
+                    this.stream.removeTrack(audioTrack);
+                }            
+            }
+        );
     }
   
     connectedCallback() {
