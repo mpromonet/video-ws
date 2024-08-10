@@ -7,6 +7,8 @@
 
 import { MediaStream } from './mediastream.js';
 
+const scriptPath = new URL(import.meta.url).pathname;
+
 class VideoWsElement extends HTMLElement {
     static observedAttributes = ["url"];
   
@@ -14,7 +16,7 @@ class VideoWsElement extends HTMLElement {
       super();
       this.shadowDOM = this.attachShadow({mode: 'open'});
       this.shadowDOM.innerHTML = `
-                  <link rel="stylesheet" href="video-ws/video-ws.css">
+                  <link rel="stylesheet" href="${scriptPath.substring(0, scriptPath.lastIndexOf('/'))}/video-ws.css">
                   <div class="videoContent">
                     <video id="video" muted playsinline controls preload="none"></video>
                     <div id="spinner" class="loading"></div>
