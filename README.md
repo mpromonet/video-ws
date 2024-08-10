@@ -32,3 +32,5 @@ Websocket server should send :
   "ts": 1723304995845852
 }
 ```
+
+It was done to work with https://github.com/mpromonet/rtsp2web and https://github.com/mpromonet/rtsp2web-rs
