@@ -34,10 +34,12 @@ class VideoWsElement extends HTMLElement {
                     this.shadowDOM.getElementById("spinner").classList.add("loading");
                 }            
             }, (loaded) => {
-                if (loaded) {
+                if (loaded) {                    
                     this.stream.addTrack(audioTrack);          
-                } else {
+                    this.audioContext.resume();
+                } else {                    
                     this.stream.removeTrack(audioTrack);
+                    this.audioContext.suspend();
                 }            
             }
         );
