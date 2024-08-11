@@ -13,10 +13,10 @@ export class MediaStream {
     ws = null;
     metadata = {media:'', codec: '', freq: 0, channels: 0, ts: 0, type: ''};
 
-    constructor(videoCanvas, audioContext, onloadedcallback) {
-        this.videoProcessor = new VideoProcessor(videoCanvas, onloadedcallback);
+    constructor(videoCanvas, audioContext, onvideoloadedcallback, onaudioloadedcallback) {
+        this.videoProcessor = new VideoProcessor(videoCanvas, onvideoloadedcallback);
         if (audioContext) {
-            this.audioProcessor = new AudioProcessor(audioContext);
+            this.audioProcessor = new AudioProcessor(audioContext, onaudioloadedcallback);
         }
     }
 
