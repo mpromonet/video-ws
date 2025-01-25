@@ -31,7 +31,7 @@ export class VideoProcessor {
             return this._onJPEGFrame(metadata, data);
         } else {
             this.renderer.drawText(`Codec ${metadata.codec} unknown`);
-            this._changeState(false);
+            this._changeState(true);
             return Promise.reject(`Unknown format`);
         }
     }
@@ -58,7 +58,7 @@ export class VideoProcessor {
                 this.decoder.configure(config);
             } else {
                 this.renderer.drawText(`Codec ${codec} not supported`);
-                this._changeState(false);
+                this._changeState(true);
                 return Promise.reject(`${codec} is not supported`);
             }
         }
