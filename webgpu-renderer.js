@@ -49,7 +49,7 @@ fn frag_main(@location(0) uv : vec2<f32>) -> @location(0) vec4<f32> {
 export class WebGPURenderer {
   ctx = null;
 
-  started = new Promise(() => {});
+  started = Promise.resolve();
 
   device = null;
   pipeline = null;
@@ -77,18 +77,9 @@ export class WebGPURenderer {
     const module =  this.device.createShaderModule({code: shaderSource});
     this.pipeline = this.device.createRenderPipeline({
       layout: "auto",
-      vertex: {
-        module,
-        entryPoint: "vert_main"
-      },
-      fragment: {
-        module,
-        entryPoint: "frag_main",
-        targets: [{format}]
-      },
-      primitive: {
-        topology: "triangle-list"
-      }
+      vertex: { module, entryPoint: "vert_main" },
+      fragment: { module, entryPoint: "frag_main", targets: [{format}] },
+      primitive: { topology: "triangle-list" }
     });
   
     this.sampler = this.device.createSampler({});
@@ -106,25 +97,23 @@ export class WebGPURenderer {
           {binding: 2, resource: this.device.importExternalTexture({source: frame})}
         ],
       });
-    } else{
-      return null;
-    }
+    } 
+    return null;
   }
 
   _createCommandEncoder(frame) {
     const uniformBindGroup = this._createBindGroup(frame);
-    const commandEncoder = this.device.createCommandEncoder();
-    const view = this.ctx.getCurrentTexture().createView();
     const renderPassDescriptor = {
       colorAttachments: [
         {
-          view,
+          view: this.ctx.getCurrentTexture().createView(),
           clearValue: [1.0, 1.0, 1.0, 1.0],
           loadOp: "clear",
           storeOp: "store",
         },
       ],
     };
+    const commandEncoder = this.device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);    
     if (uniformBindGroup) {
       passEncoder.setPipeline(this.pipeline);
@@ -139,12 +128,15 @@ export class WebGPURenderer {
   async draw(frame) {
     await this.started;
 
-    requestAnimationFrame(() => {
-      const commandEncoder = this._createCommandEncoder(frame);
-      this.device.queue.submit([commandEncoder.finish()]);
-  
-      frame?.close();
-    });    
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        const commandEncoder = this._createCommandEncoder(frame);
+        this.device.queue.submit([commandEncoder.finish()]);
+    
+        frame?.close();
+        resolve();
+      });
+    });
   }
 
   _createTextCanvas(text) {
