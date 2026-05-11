@@ -75,8 +75,23 @@ class VideoWsElement extends HTMLElement {
         console.log(`Attribute ${name} has changed.`);
         if (name === "url" && oldValue !== newValue) {
             this.shadowDOM.getElementById("spinner").classList.add("loading");
-            this.mediaStream.connect(newValue);
+            this._connectStream(newValue);
         }
+    }
+
+    async _connectStream(stream) {
+        // Use WebTransport (QUIC) when available; fall back to WebSocket.
+        if (typeof WebTransport !== 'undefined' && location.protocol === 'https:') {
+            try {
+                const resp = await fetch('/api/quic');
+                const info = await resp.json();
+                if (info?.port) {
+                    const ok = await this.mediaStream.connectWebTransport(stream, info.port, info.fingerprint);
+                    if (ok) return;
+                }
+            } catch (_) { /* QUIC not configured */ }
+        }
+        this.mediaStream.connect(stream);
     }
   }
   
