@@ -1,7 +1,7 @@
 video-ws
 ===
 
-It connects to a websocket server serving encoded frames and render using webcodecs
+It connects to a websocket/webtransport server serving encoded frames and render using webcodecs
 
 A simple page could be:
 ```
@@ -17,7 +17,7 @@ A simple page could be:
 </html>
 ```
 
-Websocket server should send :
+Websocket/Webtransport server should send :
 - binary annexb H264 & H265 frames, JPEG frames, audio frames
 - json for metadata
 ```
