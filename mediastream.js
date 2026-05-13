@@ -73,7 +73,7 @@ export class MediaStream {
         try {
             const wtOptions = {};
             if (certFingerprint) {
-                const hashBytes = new Uint8Array(JSON.parse(certFingerprint));
+                const hashBytes = new Uint8Array(certFingerprint);
                 wtOptions.serverCertificateHashes = [
                     { 
                         algorithm: 'sha-256', 
